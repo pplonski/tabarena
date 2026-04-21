@@ -48,15 +48,21 @@ class SimpleLightGBM(AbstractExecModel):
 
 
 if __name__ == '__main__':
-    expname = str(Path(__file__).parent / "experiments" / "quickstart_custom_model")  # folder location to save all experiment artifacts
-    leaderboard_dir = str(Path(__file__).parent / "leaderboards" / "quickstart_custom_model")  # folder location to store tables, plots and figures
+    expname = str(Path(__file__).parent / "experiments" / "quickstart_custom_model_regression_small")  # folder location to save all experiment artifacts
+    leaderboard_dir = str(Path(__file__).parent / "leaderboards" / "quickstart_custom_model_regression_small")  # folder location to store tables, plots and figures
     ignore_cache = False  # set to True to overwrite existing caches and re-run experiments from scratch
 
     ta_context = TabArenaContext()
     task_metadata = ta_context.task_metadata.copy()
 
-    # Sample for a quick demo
-    datasets = ["anneal", "credit-g", "diabetes"]  # datasets = list(task_metadata["name"])
+    # Run only regression tasks in the "small" bucket:
+    # n_samples_train_per_fold < 10_000
+    task_metadata_small_regression = task_metadata[
+        (task_metadata["problem_type"] == "regression")
+        & (task_metadata["n_samples_train_per_fold"] < 1_000_000)
+    ].copy()
+    datasets = sorted(task_metadata_small_regression["name"].tolist())
+    print(f"Selected {len(datasets)} small regression datasets: {datasets}")
     folds = [0]
 
     methods = [
